@@ -1,0 +1,32 @@
+[project]
+name = "ti-phase-light-modulator"
+version = "0.1.0"
+description = "Easy TI PLM data formatting and phase processing in Python"
+readme = "README.md"
+authors = [{name = "Sam Martin", email = "martins@ti.com"}]
+license = {file = "LICENSE"}
+requires-python = ">=3.10"
+keywords = []
+dependencies = [
+    "param",
+    "numpy",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest >=7",
+  "build",
+  "twine",
+]
+display = [
+  "pygame >=2.6,<3",
+  "screeninfo >=0.8,<1",
+  "pillow >=10,<11"
+]
+
+[project.scripts]
+ti_plm = "ti_phase_light_modulator.cli:cli"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
