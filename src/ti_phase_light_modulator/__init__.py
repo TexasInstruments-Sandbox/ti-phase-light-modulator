@@ -14,12 +14,12 @@ class PLM(param.Parameterized):
     
     shape = param.XYCoordinates(
         label='Shape (rows, columns)',
-        doc='Shape of PLM as (rows, columns)'
+        doc='Resolution of PLM as (rows, columns)'
     )
     
     pitch = param.XYCoordinates(
-        label='Micromirror Pitch (m))',
-        doc='Pitch of micromirrors as (vertical, horizontal). Units are meters. Order of dimensions matches row-major format of other PLM params.'
+        label='Pitch (m)',
+        doc='Vertical and horizontal pitch of micromirrors in meters. Order (vertical, horizontal) matches row-major format of arrays.'
     )
     
     phase_range = param.Range(
@@ -61,6 +61,16 @@ class PLM(param.Parameterized):
         
         if len(self.bitpack_layout.shape) != 2:
             raise TIPLMException('`bitpack_layout` must be 2D')
+    
+    @param.output(param.Number(label='Size (m)', doc='Active array dimensions (height, width) in meters'))
+    @param.depends('shape', 'pitch')
+    def size(self):
+        return np.multiply(self.shape, self.pitch)
+    
+    @param.output(param.Number(label='Area (m²)', doc='Active array area in square meters'))
+    @param.depends('size')
+    def area(self):
+        return np.prod(self.size())
     
     @param.depends('displacement_ratios', 'phase_range', watch=True, on_init=True)
     def _update_phase_buckets(self):

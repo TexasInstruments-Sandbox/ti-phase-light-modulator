@@ -1,5 +1,5 @@
 import numpy as np
-from pytest import raises
+from pytest import raises, approx
 
 
 def test_p47():
@@ -54,6 +54,10 @@ def test_p47():
     with raises(TIPLMException):
         plm.process_phase_map(phase)
     
+    # make sure size and area are calculated correctly
+    assert np.array_equal(plm.size(), [5832e-6, 10368e-6])
+    assert approx(plm.area()) == 6.0466176e-5
+    
 
 def test_p67():
     from ti_phase_light_modulator import PLM
@@ -107,7 +111,10 @@ def test_p67():
     from ti_phase_light_modulator import TIPLMException
     with raises(TIPLMException):
         plm.process_phase_map(phase)
-
+    
+    # make sure size and area are calculated correctly
+    assert np.array_equal(plm.size(), [8640e-6, 13824e-6])
+    assert approx(plm.area()) == 1.1943935e-4
 
 def test_p67_minus_pi_to_pi():
     from ti_phase_light_modulator import PLM
