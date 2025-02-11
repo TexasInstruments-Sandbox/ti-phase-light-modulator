@@ -55,8 +55,7 @@ class PLM(param.Parameterized):
     def __init__(self, **params):
         self._phase_buckets = None
         self._n_bits = 0
-        self._flip_dims = []  # array of dimension indices that should be flipped after final bitmap is calculated
-        
+                
         super().__init__(**params)
         
         if len(self.bitpack_layout.shape) != 2:
