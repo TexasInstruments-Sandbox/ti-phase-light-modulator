@@ -12,14 +12,14 @@ def test_bitpack():
     plm = PLM.from_db('p67')
     
     # check bitstacking function on various class/instance objects
-    for bs in [bitpack, PLM.bitpack, plm.bitpack]:
+    for f in [bitpack, PLM.bitpack, plm.bitpack]:
         
         # check bitpacking 8 bitmaps
-        stack = bs(bitmaps[0:8])
+        stack = f(bitmaps[0:8])
         assert np.array_equal(stack.shape, np.array([1, n, n]))
         assert np.all(stack == 255)
 
         # check bitpacking 24 bitmaps
-        stack = bs(bitmaps)
+        stack = f(bitmaps)
         assert np.array_equal(stack.shape, np.array([3, n, n]))
         assert np.all(stack == 255)
