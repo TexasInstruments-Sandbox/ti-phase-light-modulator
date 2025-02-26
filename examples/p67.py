@@ -21,7 +21,7 @@ if len(phase.shape) > 2:
     phase = np.moveaxis(phase, 2, 0)
 
 # Process phase data into bitmap specific to the .67 PLM
-# This handles all quantization to appropriate phase displacement levels and bitpacking to the correct 2x2 electrode locations
+# This handles all quantization to appropriate phase displacement levels and mapping to the correct 2x2 electrode locations
 bmp = plm.process_phase_map(phase)
 
 if len(bmp.shape) > 2:

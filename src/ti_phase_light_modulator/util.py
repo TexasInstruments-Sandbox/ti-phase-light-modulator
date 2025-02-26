@@ -10,7 +10,7 @@ class TIPLMException(Exception):
     pass
 
 
-def bitstack(bitmaps: list|tuple):
+def bitpack(bitmaps: list|tuple):
     """Stack MSB of 8 bitmaps into 8-bit image
     
     Args:

@@ -4,7 +4,7 @@ This is the main module defining the PLM class. The PLM class leverages the `par
 import importlib.metadata
 import param
 import numpy as np
-from .util import TIPLMException, TWO_PI, bitstack
+from .util import TIPLMException, TWO_PI, bitpack
 
 __version__ = importlib.metadata.version(__package__ or __name__)
 
@@ -40,8 +40,8 @@ class PLM(param.Parameterized):
         default=np.array([])
     )
     
-    bitpack_layout = param.Array(
-        label='Bitpack Layout',
+    electrode_layout = param.Array(
+        label='Electrode Layout',
         doc='2D array defining physical locations of each electrode under the PLM mirror. E.g. [[2, 3], [0, 1]] defines a 2x2 electrode layout where the top-left is bit 2, top-right is bit 3, bottom-left is bit 0, and bottom-right is bit 1.',
         default=np.array([]),
     )
@@ -58,8 +58,8 @@ class PLM(param.Parameterized):
                 
         super().__init__(**params)
         
-        if len(self.bitpack_layout.shape) != 2:
-            raise TIPLMException('`bitpack_layout` must be 2D')
+        if len(self.electrode_layout.shape) != 2:
+            raise TIPLMException('`electrode_layout` must be 2D')
     
     @param.output(param.Number(label='Size (m)', doc='Active array dimensions (height, width) in meters'))
     @param.depends('shape', 'pitch')
@@ -103,28 +103,28 @@ class PLM(param.Parameterized):
         phase_state_idx = np.digitize(phase_map, self._phase_buckets) % self._n_bits
         return phase_state_idx
     
-    def bitpack(self, phase_state_idx):
-        """Convert phase state index to electrode layout array based on the current device's memory map and bitpack layout.
+    def electrode_map(self, phase_state_idx):
+        """Convert phase state index to electrode layout array based on the current device's memory map and electrode map layout.
 
         Args:
             phase_state_idx (ndarray): Array of phase state index values. Must be at least 2D. If >2D, last 2 dimensions will be treated as PLM row and column. E.g. if operating on data for multiple channels, dimensions should be channel, row, column. Supports prepending arbitrary dimensions as long as last 2 are row and column.
 
         Returns:
-            ndarray: Uint8 array of binary encoded phase index values. Output dimensions will be a function of the bitpacking layout. E.g. if 2x2 bitpacking layout is used, the last 2 output dimensions will be 2x rows and columns of input.
+            ndarray: Uint8 array of binary encoded phase index values. Output dimensions will be a function of the electrode layout. E.g. if 2x2 electrode layout is used, the last 2 output dimensions will be 2x rows and columns of input.
         """
         
         # index into `memory_lut` using `phase_state_idx` array. resulting `memory` array will have same shape as `phase_state_idx`.
         memory = self.memory_lut[phase_state_idx]
         
-        # broadcast `memory` and `bitpack_layout` with bitwise_right_shift so all elements of `memory` are shifted by all values in `bitpack_layout`
-        # resulting array will have 2 additional dimensions added to the end representing the 2 dimensions of bitpack_layout
+        # broadcast `memory` and `electrode_layout` with bitwise_right_shift so all elements of `memory` are shifted by all values in `electrode_layout`
+        # resulting array will have 2 additional dimensions added to the end representing the 2 dimensions of electrode_layout
         # at the same time, use `& 1` to mask everything except LSB
-        out = np.bitwise_right_shift(memory[..., None, None], self.bitpack_layout.astype(np.uint8)).astype(np.uint8) & 1
+        out = np.bitwise_right_shift(memory[..., None, None], self.electrode_layout.astype(np.uint8)).astype(np.uint8) & 1
         
-        # calculate new shape of final output by multiplying the last 2 dimensions by the shape of bitpack_layout
-        new_shape = np.concat([np.array(memory.shape)[:-2], np.multiply(memory.shape[-2:], self.bitpack_layout.shape)])
+        # calculate new shape of final output by multiplying the last 2 dimensions by the shape of electrode_layout
+        new_shape = np.concat([np.array(memory.shape)[:-2], np.multiply(memory.shape[-2:], self.electrode_layout.shape)])
         
-        # rearrange array axes so when we call reshape we end up with groups of NxM bits in the order defined by bitpack_layout array
+        # rearrange array axes so when we call reshape we end up with groups of NxM bits in the order defined by electrode_layout array
         out = np.swapaxes(out, -2, -3).reshape(new_shape)
         
         # flip array along axes indicated in `data_flip` parameter
@@ -135,7 +135,7 @@ class PLM(param.Parameterized):
         return out
 
     def process_phase_map(self, phase_map, replicate_bits=True, enforce_shape=True):
-        """Process an array of phase data into a bitmap appropriate for displaying on this PLM device. This function handles quantization and bitpacking of data.
+        """Process an array of phase data into a bitmap appropriate for displaying on this PLM device. This function handles quantization and electrode mapping of data.
 
         Args:
             phase_map (ndarray): Array containing phase data in the range [0, 2pi). Array should have 3 dimensions: channel, row, column
@@ -146,12 +146,12 @@ class PLM(param.Parameterized):
             TIPLMException: Incorrect phase map resolution
 
         Returns:
-            ndarray: Quantized and bitpacked data based on the provided phase map, optionally replicated across all bits to fill the full frame time with the same CGH.
+            ndarray: Quantized and electrode mapped data based on the provided phase map, optionally replicated across all bits to fill the full frame time with the same CGH.
         """
         if enforce_shape and (len(phase_map.shape) < 2 or phase_map.shape[-2] != self.shape[0] or phase_map.shape[-1] != self.shape[1]):
             raise TIPLMException(f'Phase map shape ({phase_map.shape}) does not match device shape ({self.shape}).')
         
-        out = self.bitpack(self.quantize(phase_map))
+        out = self.electrode_map(self.quantize(phase_map))
         
         if replicate_bits:
             out *= 255
@@ -159,8 +159,8 @@ class PLM(param.Parameterized):
         return out
 
     @staticmethod
-    def bitstack(bitmaps):
-        return bitstack(bitmaps)
+    def bitpack(bitmaps):
+        return bitpack(bitmaps)
     
     @classmethod
     def from_db(cls, name, **params):

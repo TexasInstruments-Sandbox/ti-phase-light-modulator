@@ -32,7 +32,7 @@ def test_p47():
     assert np.array_equal(phase_idx, phase_idx_expected)
     memory = plm.memory_lut[phase_idx]
     assert np.array_equal(memory, memory_expected)
-    bits = plm.bitpack(phase_idx)
+    bits = plm.electrode_map(phase_idx)
     assert np.array_equal(bits, bits_expected)
     
     # test full algorithm
@@ -90,7 +90,7 @@ def test_p67():
     assert np.array_equal(phase_idx, phase_idx_expected)
     memory = plm.memory_lut[phase_idx]
     assert np.array_equal(memory, memory_expected)
-    bits = plm.bitpack(phase_idx)
+    bits = plm.electrode_map(phase_idx)
     assert np.array_equal(bits, bits_expected)
     
     # test full algorithm
@@ -148,7 +148,7 @@ def test_p67_minus_pi_to_pi():
     assert np.array_equal(phase_idx, phase_idx_expected)
     memory = plm.memory_lut[phase_idx]
     assert np.array_equal(memory, memory_expected)
-    bits = plm.bitpack(phase_idx)
+    bits = plm.electrode_map(phase_idx)
     assert np.array_equal(bits, bits_expected)
     
     # test full algorithm
@@ -204,7 +204,7 @@ def test_p67_3d():
     assert np.array_equal(phase_idx, phase_idx_expected)
     memory = plm.memory_lut[phase_idx]
     assert np.array_equal(memory, memory_expected)
-    bits = plm.bitpack(phase_idx)
+    bits = plm.electrode_map(phase_idx)
     assert np.array_equal(bits, bits_expected)
     
     # test full algorithm
