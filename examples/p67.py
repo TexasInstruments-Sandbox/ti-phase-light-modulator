@@ -7,6 +7,7 @@ from ti_phase_light_modulator import PLM
 
 here = pathlib.Path(__file__).parent
 out = here / 'out'
+out.mkdir(exist_ok=True)
 
 # Initialize PLM object pre-configured with .67 parameters
 plm = PLM.from_db('p67')
