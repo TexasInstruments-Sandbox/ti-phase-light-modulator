@@ -5,7 +5,7 @@ import numpy as np
 from PIL import Image
 from ti_phase_light_modulator import PLM
 
-here = pathlib.Path(__file__).parent
+here = pathlib.Path(__file__).parent  # change to `pathlib.Path('.')` if running in a notebook
 out = here / 'out'
 out.mkdir(exist_ok=True)
 
