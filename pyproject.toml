@@ -8,8 +8,8 @@ license = {file = "LICENSE"}
 requires-python = ">=3.10"
 keywords = []
 dependencies = [
-    "param",
-    "numpy",
+    "param >=2<3",
+    "numpy >=2<3",
 ]
 
 [project.optional-dependencies]
