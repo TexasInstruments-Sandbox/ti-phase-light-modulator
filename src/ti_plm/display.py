@@ -16,7 +16,11 @@ try:
     from PIL.Image import Image
     from screeninfo.screeninfo import get_monitors
 except ImportError as e:
-    e.add_note('`ti_plm.display` module requires `pygame`, `pillow`, and `screeninfo` to be installed. Please install these with pip/conda and try again.')
+    msg = '`ti_plm.display` module requires `pygame`, `pillow`, and `screeninfo` to be installed. Please install these with pip/conda and try again.'
+    try:
+        e.add_note(msg)
+    except:
+        e.msg = f'{e.msg}\n{msg}'
     raise e
 
 from . import TIPLMException
