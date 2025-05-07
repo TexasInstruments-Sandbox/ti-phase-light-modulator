@@ -1,2 +1,2 @@
-include .ti/ti_manifest.html
+include .ti/manifest.html
 include src/ti_plm/db/*.json
