@@ -1,7 +1,7 @@
 from functools import cache
-import importlib
+from importlib import resources
 
-data_path = importlib.resources.files(__package__ or __name__)
+data_path = resources.files(__package__ or __name__)
 
 
 @cache
