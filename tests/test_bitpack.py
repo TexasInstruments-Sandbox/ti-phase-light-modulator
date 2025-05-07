@@ -2,8 +2,8 @@ import numpy as np
 
 
 def test_bitpack():
-    from ti_phase_light_modulator.util import bitpack
-    from ti_phase_light_modulator import PLM
+    from ti_plm.util import bitpack
+    from ti_plm import PLM
     
     # test bitpacking function
     n = 100

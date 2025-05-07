@@ -3,7 +3,7 @@ from pytest import raises, approx
 
 
 def test_p47():
-    from ti_phase_light_modulator import PLM
+    from ti_plm import PLM
     
     # create test phase map of phase values associated with each displacement level of a p47 SHV device
     phase = np.array([[0.0, 0.0126, 0.0259, 0.0495, 0.0710, 0.0878, 0.1382, 0.2153, 0.3274, 0.3610, 0.4204, 0.5046, 0.5916, 0.6730, 0.8254, 1.0]]) * 15/16 * 2 * np.pi
@@ -50,7 +50,7 @@ def test_p47():
 
     # make sure shape enforcement is working
     # calling process_phase_map without enforce_shape=False will throw an exception if the input phase map shape doesn't match plm.shape
-    from ti_phase_light_modulator import TIPLMException
+    from ti_plm import TIPLMException
     with raises(TIPLMException):
         plm.process_phase_map(phase)
     
@@ -60,7 +60,7 @@ def test_p47():
     
 
 def test_p67():
-    from ti_phase_light_modulator import PLM
+    from ti_plm import PLM
     
     # create test phase map of phase values associated with each displacement level of a p67 SHV device
     phase = np.array([[0.0, 0.0126, 0.0259, 0.0495, 0.0710, 0.0878, 0.1382, 0.2153, 0.3274, 0.3610, 0.4204, 0.5046, 0.5916, 0.6730, 0.8254, 1.0]]) * 15/16 * 2 * np.pi
@@ -108,7 +108,7 @@ def test_p67():
 
     # make sure shape enforcement is working
     # calling process_phase_map without enforce_shape=False will throw an exception if the input phase map shape doesn't match plm.shape
-    from ti_phase_light_modulator import TIPLMException
+    from ti_plm import TIPLMException
     with raises(TIPLMException):
         plm.process_phase_map(phase)
     
@@ -117,7 +117,7 @@ def test_p67():
     assert approx(plm.area()) == 1.1943935e-4
 
 def test_p67_minus_pi_to_pi():
-    from ti_phase_light_modulator import PLM
+    from ti_plm import PLM
     
     # create test phase map of phase values associated with each displacement level of a p67 SHV device
     # make this phase array 3D to test algorithm handling of >2D phase data
@@ -157,7 +157,7 @@ def test_p67_minus_pi_to_pi():
 
 
 def test_p67_3d():
-    from ti_phase_light_modulator import PLM
+    from ti_plm import PLM
     
     # create test phase map of phase values associated with each displacement level of a p67 SHV device
     # make this phase array 3D to test algorithm handling of >2D phase data
