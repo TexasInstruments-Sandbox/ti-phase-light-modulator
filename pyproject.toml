@@ -16,6 +16,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   "pytest >=7",
+  "flake8",
   "build",
   "twine",
 ]
