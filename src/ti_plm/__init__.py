@@ -1,5 +1,5 @@
 """
-This is the main module defining the PLM class. The PLM class leverages the `param` library to define parameters describing a PLM, such as its resolution, pixel pitch, phase state levels, etc. Each parameter is defined at the class level and includes default values and detailed documentation about what that parameter is. The `param` library enforces type checking and provides a nice dependency graph through function decorators
+This is the main module defining the PLM class. The PLM class leverages the 'param' library to parameterize a PLM device, such as its resolution, pixel pitch, phase state levels, etc. Each parameter is defined at the class level and includes default values and detailed documentation about what that parameter is. The `param` library enforces type checking and makes it easy to define a dependency graph through function decorators.
 """
 import importlib.metadata
 import param
@@ -10,7 +10,7 @@ __version__ = importlib.metadata.version(__package__ or __name__)
 
 
 class PLM(param.Parameterized):
-    """Base class describing a TI PLM device"""
+    """Base class defining intrinsic properties of a PLM device."""
     
     shape = param.XYCoordinates(
         label='Shape (rows, columns)',
@@ -19,7 +19,7 @@ class PLM(param.Parameterized):
     
     pitch = param.XYCoordinates(
         label='Pitch (m)',
-        doc='Vertical and horizontal pitch of micromirrors in meters. Order (vertical, horizontal) matches row-major format of arrays.'
+        doc='Vertical and horizontal pitch of micromirrors in meters. Order (vertical, horizontal) matches row-major format of arrays and shape param.'
     )
     
     phase_range = param.Range(
@@ -30,7 +30,7 @@ class PLM(param.Parameterized):
     
     displacement_ratios = param.Array(
         label='Displacement Ratios',
-        doc='Numpy array of mirror displacement ratios in the range [0, 1]. Displacement ratios should be monotonically increasing. Ensure order matches that of `memory_lut` param.',
+        doc='Numpy array of mirror displacement ratios in the range [0, 1]. List should include 0.0 as first element and 1.0 as last element. Displacement ratios should be monotonically increasing. Ensure order matches that of `memory_lut` param.',
         default=np.array([])
     )
     
@@ -43,7 +43,7 @@ class PLM(param.Parameterized):
     electrode_layout = param.Array(
         label='Electrode Layout',
         doc='2D array defining physical locations of each electrode under the PLM mirror. E.g. [[2, 3], [0, 1]] defines a 2x2 electrode layout where the top-left is bit 2, top-right is bit 3, bottom-left is bit 0, and bottom-right is bit 1.',
-        default=np.array([]),
+        default=np.array([[]]),
     )
     
     data_flip = param.Tuple(
@@ -53,11 +53,15 @@ class PLM(param.Parameterized):
     )
     
     def __init__(self, **params):
+        
+        # init cache of phase buckets and number of bits
         self._phase_buckets = None
         self._n_bits = 0
-                
+        
+        # init parent class
         super().__init__(**params)
         
+        # ensure electrode_layout is exactly 2D
         if len(self.electrode_layout.shape) != 2:
             raise TIPLMException('`electrode_layout` must be 2D')
     
@@ -138,7 +142,7 @@ class PLM(param.Parameterized):
         """Process an array of phase data into a bitmap appropriate for displaying on this PLM device. This function handles quantization and electrode mapping of data.
 
         Args:
-            phase_map (ndarray): Array containing phase data in the range [0, 2pi). Array should have 3 dimensions: channel, row, column
+            phase_map (ndarray): Array containing phase data in the range [0, 2pi). Array can have 3 or more dimensions (e.g. channel, row, column).
             replicate_bits (bool, optional): Whether or not to multiply the final bitplane by 255 (0b11111111) so that the same CGH will be displayed for the full frame time. Defaults to True.
             enforce_shape (bool, optional): Whether or not to make sure the input phase map has the correct resolution. Defaults to True.
 
@@ -160,6 +164,7 @@ class PLM(param.Parameterized):
 
     @staticmethod
     def bitpack(bitmaps):
+        """Combine multiple binary CGHs into a single 8- or 24-bit image. See global `bitpack` function for usage details."""
         return bitpack(bitmaps)
     
     @classmethod

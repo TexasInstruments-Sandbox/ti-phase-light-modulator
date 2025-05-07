@@ -3,7 +3,7 @@
 import pathlib
 import numpy as np
 from PIL import Image
-from ti_phase_light_modulator import PLM
+from ti_plm import PLM
 
 here = pathlib.Path(__file__).parent  # change to `pathlib.Path('.')` if running in a notebook
 out = here / 'out'

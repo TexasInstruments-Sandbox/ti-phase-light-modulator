@@ -1,5 +1,5 @@
 [project]
-name = "ti-phase-light-modulator"
+name = "ti-plm"
 version = "0.1.0"
 description = "Easy TI PLM data formatting and phase processing in Python"
 readme = "README.md"
@@ -8,8 +8,8 @@ license = {file = "LICENSE"}
 requires-python = ">=3.10"
 keywords = []
 dependencies = [
-    "param >=2<3",
-    "numpy >=2<3",
+    "param >=2,<3",
+    "numpy >=2,<3",
 ]
 
 [project.optional-dependencies]
@@ -25,7 +25,7 @@ display = [
 ]
 
 [project.scripts]
-ti_plm = "ti_phase_light_modulator.cli:cli"
+ti_plm = "ti_plm.cli:cli"
 
 [build-system]
 requires = ["setuptools"]

@@ -16,7 +16,7 @@ try:
     from PIL.Image import Image
     from screeninfo.screeninfo import get_monitors
 except ImportError as e:
-    e.add_note('`ti_phase_light_modulator.display` module requires `pygame`, `pillow`, and `screeninfo` to be installed. Please install these with pip/conda and try again.')
+    e.add_note('`ti_plm.display` module requires `pygame`, `pillow`, and `screeninfo` to be installed. Please install these with pip/conda and try again.')
     raise e
 
 from . import TIPLMException
