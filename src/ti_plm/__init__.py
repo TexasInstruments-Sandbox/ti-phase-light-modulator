@@ -1,12 +1,12 @@
 """
 This is the main module defining the PLM class. The PLM class leverages the 'param' library to parameterize a PLM device, such as its resolution, pixel pitch, phase state levels, etc. Each parameter is defined at the class level and includes default values and detailed documentation about what that parameter is. The `param` library enforces type checking and makes it easy to define a dependency graph through function decorators.
 """
-import importlib.metadata
+from importlib.metadata import version
 import param
 import numpy as np
 from .util import TIPLMException, TWO_PI, bitpack
 
-__version__ = importlib.metadata.version(__package__ or __name__)
+__version__ = version(__package__ or __name__)
 
 
 class PLM(param.Parameterized):
