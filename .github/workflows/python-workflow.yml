@@ -1,20 +1,22 @@
-# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+# Workflow summary:
+# 1. Run 
 
 name: Python workflow
 
-on: [push, pull_request]
+on: push
+
+env:
+  PRIMARY_PYTHON_VERSION: '3.12'
+  PYPI_PACKAGE_NAME: 'ti-plm'
 
 jobs:
 
-  test:
-
+  local-test:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.10", "3.11", "3.12", "3.13"]
-
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -25,8 +27,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python -m pip install flake8 pytest
-        python -m pip install .
+        python -m pip install ".[dev]"
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
@@ -36,28 +37,84 @@ jobs:
     - name: Test with pytest
       run: |
         pytest
-
-  build:
-
-    if: startsWith(github.ref, 'refs/tags/v')
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    - name: Set up Python 3.12
-      uses: actions/setup-python@v3
-      with:
-        python-version: '3.12'
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install build
     - name: Build
       run: |
         python -m build
+    - name: Save artifacts
+      if: (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')) && matrix.python-version == env.PRIMARY_PYTHON_VERSION
+      uses: actions/upload-artifact@v4
+      with:
+        name: python-package-distributions
+        path: dist/
+  
+  upload-test-pypi:
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    needs: local-test
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/p/${{ env.PYPI_PACKAGE_NAME }}
+    permissions:
+      id-token: write
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: python-package-distributions
+        path: dist/
+    - name: Publish to TestPyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        repository-url: https://test.pypi.org/legacy/
+
+  test-from-test-pypi:
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    needs: upload-test-pypi
+    steps:
+    - name: Set up Python ${{ env.PRIMARY_PYTHON_VERSION }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ env.PRIMARY_PYTHON_VERSION }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest ${{ env.PYPI_PACKAGE_NAME }} --extra-index-url https://test.pypi.org/simple/
+    - name: Test with pytest
+      run: |
+        pytest
+  
+  final-release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    needs: test-from-test-pypi
+    environment:
+      name: testpypi
+      url: https://pypi.org/p/${{ env.PYPI_PACKAGE_NAME }}
+    permissions:
+      id-token: write
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: python-package-distributions
+        path: dist/
+    - name: Validate version
+      run: |
+        TAG_VERSION=${{ github.ref_name }}
+        TAG_VERSION=${TAG_VERSION#v}
+        WHL_VERSION=$(unzip -p dist/*.whl '*/METADATA' | grep '^Version:' | awk '{print $2}')
+        WHL_VERSION=${WHL_VERSION#v}
+        if [ "$TAG_VERSION" != "$WHL_VERSION" ]; then
+          echo "Version mismatch: Git tag version ($TAG_VERSION) does not match wheel version ($WHL_VERSION)"
+          exit 1
+        fi
     - name: Create GitHub Release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         gh release create "${{ github.ref_name }}" dist/* --title "${{ github.ref_name }}" --notes "Release ${GITHUB_REF_NAME}"
+    - name: Publish to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        repository-url: https://pypi.org/legacy/
