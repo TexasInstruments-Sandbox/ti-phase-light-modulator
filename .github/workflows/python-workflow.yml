@@ -38,6 +38,7 @@ jobs:
       run: |
         pytest
     - name: Build
+      if: startsWith(github.ref, 'refs/tags/v') && matrix.python-version == env.PRIMARY_PYTHON_VERSION
       run: |
         python -m build
     - name: Save artifacts
