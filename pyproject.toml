@@ -1,6 +1,6 @@
 [project]
 name = "ti-plm"
-version = "0.1.0"
+version = "1.0.0"
 description = "Easy TI PLM data formatting and phase processing in Python"
 readme = "README.md"
 authors = [{name = "Sam Martin", email = "martins@ti.com"}]
