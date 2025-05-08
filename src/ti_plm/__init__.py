@@ -167,6 +167,12 @@ class PLM(param.Parameterized):
         """Combine multiple binary CGHs into a single 8- or 24-bit image. See global `bitpack` function for usage details."""
         return bitpack(bitmaps)
     
+    @staticmethod
+    def get_device_list():
+        """Get a list of all available PLM devices in the database."""
+        from .db import get_device_list
+        return get_device_list()
+    
     @classmethod
     def from_db(cls, name, **params):
         """Create a PLM instance by searching the database for a given device name.
