@@ -72,6 +72,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: upload-test-pypi
     steps:
+    - name: Checkout
+      uses: actions/checkout@v4
     - name: Set up Python ${{ env.PRIMARY_PYTHON_VERSION }}
       uses: actions/setup-python@v3
       with:
@@ -79,7 +81,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pytest ${{ env.PYPI_PACKAGE_NAME }} --extra-index-url https://test.pypi.org/simple/
+        pip install "${{ env.PYPI_PACKAGE_NAME }}[dev]" --extra-index-url https://test.pypi.org/simple/
     - name: Test with pytest
       run: |
         pytest
