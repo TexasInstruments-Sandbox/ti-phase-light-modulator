@@ -14,7 +14,7 @@ Recommended: use `conda`, `venv`, `uv`, etc. to set up a dedicated Python enviro
 
 * `pip install ti-plm`
   * Core functionality only
-* `pip install ti-plm[display]`
+* `pip install "ti-plm[display]"`
   * Installs optional dependencies needed by `display` module (pygame, screeninfo, pillow, etc.)
 
 ## Usage
