@@ -48,7 +48,7 @@ plm = PLM(
 bmp = plm.process_phase_map(phase_map)
 
 # This process can also be broken down into individual steps:
-# 1. Quantize continuous phase data into buckets corresponding to avaialble mirror levels
+# 1. Quantize continuous phase data into buckets corresponding to available mirror levels
 state_index = plm.quantize(phase_map)
 # 2. Map state_index values to electrodes
 bmp = plm.electrode_map(state_index)
