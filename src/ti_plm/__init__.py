@@ -1,6 +1,7 @@
 """
 This is the main module defining the PLM class. The PLM class leverages the 'param' library to parameterize a PLM device, such as its resolution, pixel pitch, phase state levels, etc. Each parameter is defined at the class level and includes default values and detailed documentation about what that parameter is. The `param` library enforces type checking and makes it easy to define a dependency graph through function decorators.
 """
+
 from importlib.metadata import version
 import param
 import numpy as np
@@ -32,6 +33,13 @@ class PLM(param.Parameterized):
         label='Displacement Ratios',
         doc='Numpy array of mirror displacement ratios in the range [0, 1]. List should include 0.0 as first element and 1.0 as last element. Displacement ratios should be monotonically increasing. Ensure order matches that of `memory_lut` param.',
         default=np.array([])
+    )
+    
+    max_displacement_ratio = param.Number(
+        label='Max Displacement Ratio',
+        doc='Optional max displacement ratio override. If set, this value will be used to scale the `displacement_ratios` array. Otherwise, the values will be scaled to the number of states minus one, e.g. 15/16 for 4-bit devices.',
+        allow_None=True,
+        default=None
     )
     
     memory_lut = param.Array(
@@ -75,7 +83,7 @@ class PLM(param.Parameterized):
     def area(self):
         return np.prod(self.size())
     
-    @param.depends('displacement_ratios', 'phase_range', watch=True, on_init=True)
+    @param.depends('displacement_ratios', 'max_displacement_ratio', 'phase_range', watch=True, on_init=True)
     def _update_phase_buckets(self):
         """Cache the phase bucket array for use in the quantize operation.
         
@@ -88,8 +96,12 @@ class PLM(param.Parameterized):
         # save number of bits for later use by other class methods
         self._n_bits = len(self.displacement_ratios)
         
+        # if max_displacement_ratio is set, use it to scale displacement ratios
+        # otherwise, scale to the number of states minus one (e.g. 15/16 for 4-bit devices)
+        ratio_scale = self.max_displacement_ratio if self.max_displacement_ratio is not None else (self._n_bits - 1) / self._n_bits
+        
         # scale displacements between phase_range min and max such that the full displacement range represents one less bit than the available bit depth
-        phase_disp = self.phase_range[0] + (self.displacement_ratios * (self._n_bits - 1) / self._n_bits) * (self.phase_range[-1] - self.phase_range[0])
+        phase_disp = self.phase_range[0] + self.displacement_ratios * ratio_scale * (self.phase_range[-1] - self.phase_range[0])
         phase_disp = np.hstack([phase_disp, self.phase_range[-1]])
 
         # use average value of each phase level and the level above it to create buckets
