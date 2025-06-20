@@ -176,7 +176,7 @@ class PLM(param.Parameterized):
 
     @staticmethod
     def bitpack(bitmaps):
-        """Combine multiple binary CGHs into a single 8- or 24-bit image. See global `bitpack` function for usage details."""
+        """Combine multiple binary CGHs into a single 8- or 24-bit image. See [ti_plm.util.bitpack][] function for usage details."""
         return bitpack(bitmaps)
     
     @staticmethod
@@ -186,20 +186,20 @@ class PLM(param.Parameterized):
         return get_device_list()
     
     @classmethod
-    def from_db(cls, name, **params):
-        """Create a PLM instance by searching the database for a given device name.
+    def from_db(cls, catalog, **params):
+        """Create a PLM instance by searching the database for a given device identifier.
 
         Args:
-            name (str): Device name to search for in database
+            catalog (str): Device identifier to search for in database
             **params: Custom param values to override deserialized or default values.
         """
         from .db import get_db, get_device_list
         db = get_db()
-        if name in db:
-            db_params = cls.param.deserialize_parameters(db[name])  # get dict of params deserialized from json string
+        if catalog in db:
+            db_params = cls.param.deserialize_parameters(db[catalog])  # get dict of params deserialized from json string
             obj = cls(**db_params | params)  # create new PLM object with param values
             for p in db_params.keys():
                 obj.param[p].constant = True  # set db params to constant
             return obj
         else:
-            raise TIPLMException(f'Unrecognized device name. Please select from one of {get_device_list()}')
+            raise TIPLMException(f'Unrecognized device identifier {catalog}. Please select from one of {get_device_list()}')
